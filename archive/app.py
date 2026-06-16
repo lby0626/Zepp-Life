@@ -71,8 +71,7 @@ def server_error(e):
 
 @app.route('/')
 def index():
-    accounts = load_accounts()
-    return render_template('index.html', accounts=accounts)
+    return render_template('index.html')
 
 
 @app.route('/api/accounts', methods=['GET'])
@@ -122,35 +121,58 @@ def use_account():
     return jsonify({'success': True, 'message': f'已切换至 {accounts[idx]["name"]}'})
 
 
-@app.route('/api/update', methods=['POST'])
-def update_steps():
-    print(f'[DEBUG] /api/update called, USE_REAL_RUNNER={USE_REAL_RUNNER}')
-    # 解析请求
+@app.route('/api/accounts/rename', methods=['POST'])
+def rename_account():
     try:
         data = request.get_json(force=True)
-        print(f'[DEBUG] data received: account_idx={data.get("account_idx")}, steps={data.get("steps")}')
-    except Exception as e:
-        print(f'[DEBUG] JSON parse error: {e}')
+    except Exception:
+        return jsonify({'success': False, 'message': '请求数据格式错误'})
+    idx = data.get('account_idx')
+    new_name = data.get('name', '').strip()
+    accounts = load_accounts()
+    if idx is None or idx < 0 or idx >= len(accounts):
+        return jsonify({'success': False, 'message': '账号不存在'})
+    if not new_name:
+        return jsonify({'success': False, 'message': '名称不能为空'})
+    accounts[idx]['name'] = new_name
+    save_accounts(accounts)
+    return jsonify({'success': True, 'message': f'已重命名为 {new_name}'})
+
+
+@app.route('/api/update', methods=['POST'])
+def update_steps():
+    try:
+        data = request.get_json(force=True)
+    except Exception:
         return jsonify({'success': False, 'message': '请求数据格式错误'})
 
+    # 支持两种格式：
+    #   新版: { user, password, steps }
+    #   旧版: { account_idx, steps } ← 向后兼容
+    user = data.get('user')
+    password = data.get('password')
     account_idx = data.get('account_idx')
+
     try:
-        steps = int(data.get('steps', 25000))
+        steps = int(data.get('steps', 1))
     except (ValueError, TypeError):
         return jsonify({'success': False, 'message': '步数格式错误'})
 
     if steps < MIN_STEP or steps > MAX_STEP:
         return jsonify({'success': False, 'message': f'步数范围: {MIN_STEP}~{MAX_STEP}'})
 
-    accounts = load_accounts()
-    if account_idx is None or account_idx < 0 or account_idx >= len(accounts):
-        return jsonify({'success': False, 'message': '账号不存在'})
-
-    acct = accounts[account_idx]
+    # 通过 account_idx 查找账号
+    if not user or not password:
+        accounts = load_accounts()
+        if account_idx is None or account_idx < 0 or account_idx >= len(accounts):
+            return jsonify({'success': False, 'message': '账号不存在'})
+        acct = accounts[account_idx]
+        user = acct['user']
+        password = acct['password']
 
     if USE_REAL_RUNNER:
         try:
-            runner = MiMotionRunner(acct['user'], acct['password'])
+            runner = MiMotionRunner(user, password)
             msg, success = runner.login_and_post_step(steps, steps)
             log_text = runner.log_str if hasattr(runner, 'log_str') else ''
             if success:
@@ -177,7 +199,7 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
     local_ip = socket.gethostbyname(hostname)
     port = 5800
-    print(f'[*] StepWong Web 启动')
+    print(f'[*] Y子步数 (Flask 本地版) 启动')
     print(f'[*] 电脑访问: http://127.0.0.1:{port}')
     print(f'[*] 手机访问（同一WiFi）: http://{local_ip}:{port}')
     print(f'[*] 模式: {"真实 Zepp Life API" if USE_REAL_RUNNER else "模拟模式"}')
