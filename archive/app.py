@@ -3,9 +3,19 @@ import json
 import os
 import uuid
 import traceback
+import warnings
 import requests
 from base64 import b64encode
 from flask import Flask, render_template, jsonify, request
+
+# 抑制 Flask 开发服务器警告
+warnings.filterwarnings('ignore', message='.*development server.*')
+os.environ['FLASK_ENV'] = 'production'
+os.environ['PYTHONWARNINGS'] = 'ignore'
+
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # ====== AES 加密 ======
 try:
