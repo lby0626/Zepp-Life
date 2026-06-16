@@ -3,7 +3,7 @@
 Zepp Life（原小米运动）步数修改的本地 Web 工具。Claymorphism 卡通风格，支持多账号管理、步数预设/手动输入、一键提交。
 
 > 此分支为 **v1 本地运行版**，需要电脑开机 + Python 环境。
-> 新版在线版（无需下载）见 [`main` 分支](https://github.com/zjy1020/Zepp-Life)。
+> 新版在线版（无需下载）见 [`main` 分支](https://github.com/lby0626/Zepp-Life)。
 
 ---
 
