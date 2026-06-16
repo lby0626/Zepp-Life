@@ -6,7 +6,7 @@ const THEME_KEY = 'stepwong_theme';
 
 let accounts = [];
 let history = [];
-let currentStep = 25000;
+let currentStep = 1;
 
 // ====== 初始化 ======
 function init() {
