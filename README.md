@@ -87,6 +87,10 @@ npx wrangler deploy worker/index.js
 
 需先配置 Cloudflare 认证（`npx wrangler login`）。
 
+## 接口文档
+
+完整的 Zepp Life API 调用流程（AES 加密、登录、获取 token、提交步数）见 [`docs/zepp-life-api.md`](docs/zepp-life-api.md)。
+
 ## 历史
 
 本项目的 v1 版本为本地 Python Flask 应用（见 `flask` 分支），v2 迁移至 Serverless 架构实现全在线使用。
