@@ -2,126 +2,134 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>步数更新 — StepWong</title>
-  <link rel="stylesheet" href="static/css/pixel.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>StepWong - 步数更新</title>
+  <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-  <div class="scanline"></div>
+  <div id="app">
 
-  <div class="app-container">
+    <!-- ===== Header ===== -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="app-icon">👟</div>
+        <div>
+          <h1 class="app-title">StepWong</h1>
+          <span class="app-subtitle">步数更新工具</span>
+        </div>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="切换主题">🌙</button>
+    </header>
 
-    <!-- 状态栏 -->
-    <div class="status-bar pixel-border animate-in delay-1">
-      <span class="status-badge">API v1.0</span>
-      <span class="status-online">
-        <span class="status-dot active"></span>
-        ONLINE
-      </span>
-      <span style="font-family:'Courier New',monospace;font-size:13px;color:var(--text-muted);">⚙</span>
+    <!-- ===== Tab: 步数 ===== -->
+    <div class="tab-panel active" id="tab-steps">
+
+      <!-- 步数显示 -->
+      <div class="step-display-card" id="stepDisplay" title="点击手动输入">
+        <span class="step-number" id="stepNumber">25,000</span>
+        <span class="step-unit">步</span>
+        <input type="number" class="step-input hidden" id="stepInput" min="1" max="98800" placeholder="输入步数">
+      </div>
+      <p class="step-hint" id="stepHint">👆 点击数字手动输入</p>
+
+      <!-- 预设步数 -->
+      <div class="preset-row">
+        <button type="button" class="preset-btn" data-step="3000">🚶 3K</button>
+        <button type="button" class="preset-btn" data-step="8000">👟 8K</button>
+        <button type="button" class="preset-btn active" data-step="25000">⚡ 25K</button>
+        <button type="button" class="preset-btn" data-step="50000">🔥 50K</button>
+        <button type="button" class="preset-btn" data-step="random">🎲 随机</button>
+      </div>
+
+      <!-- 滑块 -->
+      <div class="slider-container">
+        <input type="range" id="stepSlider" min="1" max="98800" value="25000">
+        <div class="slider-labels">
+          <span>1 步</span>
+          <span>50,000</span>
+          <span>98,800</span>
+        </div>
+      </div>
+
+      <!-- 选择账号 -->
+      <div class="form-group">
+        <label class="form-label">选择账号</label>
+        <select id="accountSelect" class="rounded-select">
+          <option value="" disabled selected>— 请选择账号 —</option>
+        </select>
+      </div>
+
+      <!-- 结果横幅 -->
+      <div id="resultBanner" class="result-banner hidden">
+        <div class="result-icon" id="resultIcon">✓</div>
+        <span class="result-msg" id="resultMsg">修改成功！</span>
+        <button type="button" class="result-close" onclick="hideResult()">✕</button>
+      </div>
+
+      <!-- 提交按钮 -->
+      <button type="button" class="submit-btn" id="submitBtn">
+        <span class="btn-text">开 始 刷 步</span>
+        <span class="btn-icon">→</span>
+      </button>
+
+      <!-- 最近记录 -->
+      <div class="history-section">
+        <div class="history-header">
+          <span class="history-title">最近记录</span>
+        </div>
+        <div id="historyList" class="history-list">
+          <p class="history-empty">还没有提交记录</p>
+        </div>
+      </div>
     </div>
 
-    <!-- 标题 -->
-    <div class="site-title animate-in delay-2">
-      <h1>步 数 更 新</h1>
-      <p class="subtitle">▸ 一键同步运动步数 ◂</p>
+    <!-- ===== Tab: 账号 ===== -->
+    <div class="tab-panel" id="tab-accounts">
+
+      <!-- 添加账号 -->
+      <div class="add-account-card">
+        <input type="text" id="newUser" placeholder="手机号 / 邮箱" autocomplete="off">
+        <input type="password" id="newPass" placeholder="密码">
+        <button type="button" id="addAccountBtn">+ 添加账号</button>
+      </div>
+
+      <!-- 已保存账号 -->
+      <div class="account-section">
+        <span class="section-title">已保存账号</span>
+        <div id="accountList" class="account-list">
+          <p class="history-empty">还没有账号，快添加一个吧</p>
+        </div>
+      </div>
     </div>
 
-    <!-- Tab 导航 -->
-    <nav class="tab-nav animate-in delay-3">
-      <button class="tab-btn active" data-tab="update">█ 步数更新 █</button>
-      <button class="tab-btn" data-tab="accounts">█ 账号管理 █</button>
-      <button class="tab-btn" data-tab="logs">█ 执行日志 █</button>
+    <!-- ===== Tab: 日志 ===== -->
+    <div class="tab-panel" id="tab-logs">
+      <div class="log-header">
+        <span class="section-title">执行日志</span>
+        <button type="button" class="clear-btn" id="clearLogBtn">清空</button>
+      </div>
+      <div class="log-panel">
+        <div class="log-content" id="logContent">
+          <span class="log-prompt">></span> <span class="log-line">系统就绪，等待执行...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 底部导航 ===== -->
+    <nav class="bottom-nav">
+      <button type="button" class="nav-item active" data-tab="steps">
+        <span class="nav-icon">👟</span>
+        <span class="nav-label">步数</span>
+      </button>
+      <button type="button" class="nav-item" data-tab="accounts">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">账号</span>
+      </button>
+      <button type="button" class="nav-item" data-tab="logs">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">日志</span>
+      </button>
     </nav>
-
-    <!-- ====== Tab: 步数更新 ====== -->
-    <div class="tab-content active" id="tab-update">
-      <div class="card pixel-border animate-in delay-4">
-        <div class="card-body">
-          <form id="stepForm">
-            <div class="form-group">
-              <label class="form-label">▼ 选择账号</label>
-              <select class="pixel-select" id="accountSelect" required>
-                <option value="" disabled selected>— 请选择账号 —</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">▼ 步数设置</label>
-              <div class="btn-row">
-                <button type="button" class="btn-preset" data-step="10000">10K</button>
-                <button type="button" class="btn-preset" data-step="20000">20K</button>
-                <button type="button" class="btn-preset" data-step="30000">30K</button>
-                <button type="button" class="btn-preset" data-step="50000">50K</button>
-                <button type="button" class="btn-preset" data-step="random">⋮ 随机</button>
-              </div>
-              <div class="step-display">
-                <span class="number" id="stepValue">25,000</span>
-                <span class="unit">步</span>
-                <span class="hint">▸ 点击预设按钮或拖动滑块 ◂</span>
-              </div>
-              <input type="range" id="stepSlider" min="1" max="98800" value="25000">
-              <div class="slider-labels">
-                <span>1</span>
-                <span>50,000</span>
-                <span>98,800</span>
-              </div>
-            </div>
-            <div id="resultBanner" class="result-banner" style="display:none;">
-              <div class="result-icon" id="resultIcon">✔</div>
-              <div class="result-msg" id="resultMsg">修改成功！</div>
-              <button type="button" class="result-close" onclick="hideResult()">✕</button>
-            </div>
-            <button type="submit" class="btn-primary">[ 动 动 吧 ]</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- ====== Tab: 账号管理 ====== -->
-    <div class="tab-content" id="tab-accounts">
-      <div class="card pixel-border animate-in delay-4">
-        <div class="card-body">
-          <div class="form-group">
-            <label class="form-label">▼ 添加账号</label>
-            <div class="add-account-form">
-              <input type="text" class="pixel-input" id="newUser" placeholder="手机号 / 邮箱">
-              <input type="password" class="pixel-input" id="newPass" placeholder="密码">
-              <button type="button" class="btn-add" id="addAccountBtn">+ 添加</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">▼ 已保存账号</label>
-            <div id="accountList">
-              <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:24px 0;">
-                ＞ 还没有账号，快添加一个吧
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ====== Tab: 执行日志 ====== -->
-    <div class="tab-content" id="tab-logs">
-      <div class="card pixel-border animate-in delay-4">
-        <div class="card-body">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <label class="form-label" style="margin-bottom:0;">▼ 执行日志</label>
-            <button type="button" class="btn-sm" id="clearLogBtn">清空</button>
-          </div>
-          <div class="log-panel" style="min-height:240px;">
-            <div class="log-content" id="logContent">
-              <span class="log-prompt">></span> <span class="log-line">系统就绪，等待执行...</span><br>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 底部 -->
-    <footer class="footer animate-in delay-6">
-      <p>STEPWONG WEB · 刷步工具</p>
-    </footer>
 
   </div>
 
