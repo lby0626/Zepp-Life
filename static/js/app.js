@@ -1,6 +1,33 @@
-// ============================================
-// StepWong Web — 前端交互
-// ============================================
+// StepWong Web — 前端交互（纯前端版）
+
+// Cloudflare Worker 地址（部署后修改）
+const WORKER_URL = 'https://stepwong-api.3255962845.workers.dev';
+
+const STORAGE_KEY = 'stepwong_accounts';
+let accounts = [];
+
+// --- 账号管理（localStorage）---
+function loadAccounts() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    accounts = raw ? JSON.parse(raw) : [];
+  } catch(e) { accounts = []; }
+  renderAccountList();
+  updateAccountSelect();
+}
+
+function saveAccounts() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+}
+
+function desensitize(user) {
+  const u = String(user);
+  if (u.length <= 8) {
+    const ln = Math.max(Math.floor(u.length / 3), 1);
+    return u.slice(0, ln) + '***' + u.slice(-ln);
+  }
+  return u.slice(0, 3) + '****' + u.slice(-4);
+}
 
 // --- Tab 切换 ---
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -19,8 +46,8 @@ const stepValue = document.getElementById('stepValue');
 let currentStep = 25000;
 
 function updateStepDisplay(val) {
-  currentStep = val;
-  stepValue.textContent = Number(val).toLocaleString();
+  currentStep = parseInt(val) || 0;
+  stepValue.textContent = Number(currentStep).toLocaleString();
 }
 
 stepSlider.addEventListener('input', function() {
@@ -66,14 +93,15 @@ function hideResult() {
   document.getElementById('resultBanner').style.display = 'none';
 }
 
-// --- 提交刷步 ---
+// --- 提交刷步（调 Worker API）---
 document.getElementById('stepForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   hideResult();
-  const select = document.getElementById('accountSelect');
-  const idx = select.value;
 
-  if (!idx || idx === '') {
+  const select = document.getElementById('accountSelect');
+  const idx = parseInt(select.value);
+
+  if (isNaN(idx) || idx < 0 || idx >= accounts.length) {
     appendLog('error', '✖ 请先选择账号！');
     return;
   }
@@ -83,22 +111,27 @@ document.getElementById('stepForm').addEventListener('submit', async function(e)
   const origText = submitBtn.textContent;
   submitBtn.textContent = '[ 执 行 中 ... ]';
 
+  const acct = accounts[idx];
   appendLog('info', '⟳ 正在提交刷步请求...');
+  appendLog('line', '   · 账号: ' + acct.name);
   appendLog('line', '   · 步数: ' + currentStep.toLocaleString());
 
   try {
-    const resp = await fetch('http://127.0.0.1:5800/api/update', {
+    const resp = await fetch(WORKER_URL + '/api/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ account_idx: parseInt(idx), steps: currentStep })
+      body: JSON.stringify({
+        user: acct.user,
+        password: acct.password,
+        steps: currentStep
+      })
     });
     const text = await resp.text();
-    console.log('Response:', resp.status, text.slice(0, 200));
 
     let data;
     try { data = JSON.parse(text); } catch(e) {
       showResult(false, '服务器返回了非JSON数据 (状态:' + resp.status + ')');
-      appendLog('error', '✖ 服务器返回HTML而非JSON: ' + text.slice(0, 100));
+      appendLog('error', '✖ 服务器返回非JSON: ' + text.slice(0, 100));
       return;
     }
 
@@ -129,9 +162,7 @@ document.getElementById('clearLogBtn').addEventListener('click', function() {
   document.getElementById('logContent').innerHTML = '<span class="log-prompt">></span> <span class="log-line">系统就绪，等待执行...</span><br>';
 });
 
-// --- 多账号管理 ---
-const accounts = window.__INITIAL_ACCOUNTS || [];
-
+// --- 账号列表渲染 ---
 function renderAccountList() {
   const list = document.getElementById('accountList');
   if (accounts.length === 0) {
@@ -167,38 +198,28 @@ function updateAccountSelect() {
   }
 }
 
-// 使用账号
-window.useAccount = async function(idx) {
-  const resp = await fetch('http://127.0.0.1:5800/api/accounts/use', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ account_idx: idx })
-  });
-  const data = await resp.json();
-  if (data.success) {
-    accounts.forEach(a => a.is_active = false);
-    accounts[idx].is_active = true;
-    renderAccountList();
-    updateAccountSelect();
-    appendLog('success', '✔ 已切换至: ' + accounts[idx].name);
-  }
+// 使用账号（纯本地）
+window.useAccount = function(idx) {
+  accounts.forEach(a => a.is_active = false);
+  accounts[idx].is_active = true;
+  saveAccounts();
+  renderAccountList();
+  updateAccountSelect();
+  appendLog('success', '✔ 已切换至: ' + accounts[idx].name);
 };
 
-// 删除账号
-window.deleteAccount = async function(idx) {
+// 删除账号（纯本地）
+window.deleteAccount = function(idx) {
   if (!confirm('确认删除账号 ' + accounts[idx].name + ' 吗？')) return;
-  const resp = await fetch('http://127.0.0.1:5800/api/accounts/' + idx, { method: 'DELETE' });
-  const data = await resp.json();
-  if (data.success) {
-    accounts.splice(idx, 1);
-    renderAccountList();
-    updateAccountSelect();
-    appendLog('success', '✔ 账号已删除');
-  }
+  accounts.splice(idx, 1);
+  saveAccounts();
+  renderAccountList();
+  updateAccountSelect();
+  appendLog('success', '✔ 账号已删除');
 };
 
-// 添加账号
-document.getElementById('addAccountBtn').addEventListener('click', async function() {
+// 添加账号（纯本地）
+document.getElementById('addAccountBtn').addEventListener('click', function() {
   const user = document.getElementById('newUser').value.trim();
   const pass = document.getElementById('newPass').value.trim();
   if (!user || !pass) {
@@ -206,20 +227,15 @@ document.getElementById('addAccountBtn').addEventListener('click', async functio
     return;
   }
 
-  const resp = await fetch('http://127.0.0.1:5800/api/accounts', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user: user, password: pass })
-  });
-  const data = await resp.json();
-  if (data.success) {
-    accounts.push({ name: data.name, user: user, password: pass, is_active: false });
-    renderAccountList();
-    updateAccountSelect();
-    document.getElementById('newUser').value = '';
-    document.getElementById('newPass').value = '';
-    appendLog('success', '✔ 账号已添加: ' + data.name);
-  } else {
-    appendLog('error', '✖ ' + data.message);
-  }
+  const name = desensitize(user);
+  accounts.push({ name, user, password: pass, is_active: false });
+  saveAccounts();
+  renderAccountList();
+  updateAccountSelect();
+  document.getElementById('newUser').value = '';
+  document.getElementById('newPass').value = '';
+  appendLog('success', '✔ 账号已添加: ' + name);
 });
+
+// 初始化加载
+loadAccounts();

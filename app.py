@@ -173,8 +173,12 @@ def update_steps():
 
 
 if __name__ == '__main__':
+    import socket
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
     port = 5800
-    print(f'[*] StepWong Web 启动: http://127.0.0.1:{port}')
+    print(f'[*] StepWong Web 启动')
+    print(f'[*] 电脑访问: http://127.0.0.1:{port}')
+    print(f'[*] 手机访问（同一WiFi）: http://{local_ip}:{port}')
     print(f'[*] 模式: {"真实 Zepp Life API" if USE_REAL_RUNNER else "模拟模式"}')
-    print('[*] 浏览器打开 http://127.0.0.1:5800 使用')
-    app.run(host='127.0.0.1', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False)
