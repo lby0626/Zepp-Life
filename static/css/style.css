@@ -71,7 +71,7 @@ body {
   transition: background 0.3s, color 0.3s;
   background-image: url('../images/bg.png');
   background-size: cover;
-  background-position: center;
+  background-position: center 30%;
   background-attachment: fixed;
 }
 
