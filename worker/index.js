@@ -120,6 +120,8 @@ async function handleUpdate(user, password, steps) {
   const location = r1.headers.get('Location');
   const code = getAccessToken(location);
   if (!code) {
+    log.push(`Location头: ${location}`);
+    log.push(`状态码: ${r1.status}`);
     return { success: false, message: '获取 accessToken 失败', log: log.join('\n') };
   }
   log.push('登录第一步成功，Location 解析完成');

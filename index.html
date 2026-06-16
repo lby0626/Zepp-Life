@@ -23,6 +23,7 @@
           <a href="https://github.com/lby0626" target="_blank" rel="noopener" aria-label="GitHub" style="display:inline-block;opacity:0.35;transition:opacity 0.15s;margin-left:4px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.35'" onfocus="this.style.opacity='1'" onblur="this.style.opacity='0.35'">
             <img src="static/images/github-fill.png" alt="GitHub" width="18" height="18" style="display:block;">
           </a>
+          <button type="button" id="tutorialBtn" class="tutorial-btn" title="微信步数绑定教学">📖</button>
         </div>
       </div>
       <button class="theme-toggle" id="themeToggle" aria-label="切换主题">🌙</button>
@@ -139,6 +140,19 @@
         <span class="nav-label">日志</span>
       </button>
     </nav>
+
+    <!-- ===== 教学弹窗 ===== -->
+    <div id="tutorialOverlay" class="modal-overlay hidden">
+      <div class="tutorial-modal">
+        <div class="tutorial-header">
+          <h2>微信步数绑定教学</h2>
+          <button type="button" id="tutorialClose" class="tutorial-close">✕</button>
+        </div>
+        <div class="tutorial-body" id="tutorialBody">
+          <p style="text-align:center;color:var(--text-muted);padding:40px 0;">加载中...</p>
+        </div>
+      </div>
+    </div>
 
   </div>
 

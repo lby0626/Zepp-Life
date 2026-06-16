@@ -503,3 +503,77 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ====== 启动 ======
 document.addEventListener('DOMContentLoaded', init);
+
+// ====== 教学弹窗 ======
+function simpleMarkdown(md) {
+  let html = md
+    // 图片（先处理，避免被其他规则干扰）
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, src) => {
+      const fixedSrc = src.startsWith('images/') ? 'tutorial/' + src : src;
+      return `<img src="${fixedSrc}" alt="${alt}" loading="lazy">`;
+    })
+    // 行内代码
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // 加粗
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    // 链接
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    // 标题
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // 分割线
+    .replace(/^---$/gm, '<hr>')
+    // 引用
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    // 无序列表
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    // 代码块（``` 包裹）
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    // 段落 — 空行分隔
+    .replace(/\n\n+/g, '</p><p>')
+    // 列表项包裹
+    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+    // 连续引用包裹
+    .replace(/(<blockquote>.*<\/blockquote>\n?)+/g, '<blockquote>$&</blockquote>')
+    // 去除多余的 blockquote 嵌套
+    .replace(/<blockquote><blockquote>/g, '<blockquote>')
+    .replace(/<\/blockquote><\/blockquote>/g, '</blockquote>');
+
+  return '<p>' + html + '</p>';
+}
+
+async function openTutorial() {
+  const overlay = document.getElementById('tutorialOverlay');
+  const body = document.getElementById('tutorialBody');
+  overlay.classList.remove('hidden');
+
+  // 已加载过就直接显示
+  if (body.dataset.loaded) return;
+
+  try {
+    const resp = await fetch('tutorial/Zepp修改微信步数教学.md');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const md = await resp.text();
+    body.innerHTML = simpleMarkdown(md);
+    body.dataset.loaded = '1';
+  } catch (err) {
+    body.innerHTML = '<p style="text-align:center;color:#ef4444;padding:40px 0;">加载失败: ' + err.message + '</p>';
+  }
+}
+
+function closeTutorial() {
+  document.getElementById('tutorialOverlay').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const openBtn = document.getElementById('tutorialBtn');
+  const closeBtn = document.getElementById('tutorialClose');
+  const overlay = document.getElementById('tutorialOverlay');
+
+  if (openBtn) openBtn.addEventListener('click', openTutorial);
+  if (closeBtn) closeBtn.addEventListener('click', closeTutorial);
+  if (overlay) overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeTutorial();
+  });
+});
