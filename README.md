@@ -96,4 +96,4 @@ npx wrangler deploy worker/index.js
 
 ---
 
-Made by [lby0626](https://github.com/lby0626)
+Made by [zjy1020](https://github.com/zjy1020)
