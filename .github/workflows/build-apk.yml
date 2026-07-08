@@ -33,11 +33,11 @@ jobs:
           cp -r static www/
           cp -r tutorial www/
 
-      - name: Generate app icons
-        run: npx capacitor-assets generate --iconBackgroundColor "#E11D48"
-
       - name: Init Capacitor Android
         run: npx cap add android
+
+      - name: Generate app icons
+        run: npx capacitor-assets generate --iconBackgroundColor "#E11D48"
 
       - name: Copy icon to web assets
         run: cp icon.png www/
