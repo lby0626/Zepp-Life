@@ -1,6 +1,5 @@
-const WORKER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? ''
-  : 'https://stepwong-api.3255962845.workers.dev';
+const isDev = !window.Capacitor && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const WORKER_URL = isDev ? '' : 'https://stepwong-api.3255962845.workers.dev';
 const STORAGE_KEY = 'stepwong_accounts';
 const HISTORY_KEY = 'stepwong_history';
 const THEME_KEY = 'stepwong_theme';
