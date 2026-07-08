@@ -232,7 +232,7 @@ export default {
     const origin = request.headers.get('Origin') || '';
 
     // CORS 头 — 动态匹配白名单
-    const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : 'null';
+    const corsOrigin = ALLOWED_ORIGINS.includes(origin) || origin.startsWith('http://localhost') ? origin : 'null';
     const corsHeaders = {
       'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
