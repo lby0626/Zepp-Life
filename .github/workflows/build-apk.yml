@@ -71,26 +71,12 @@ jobs:
 
           # 4. Adaptive icon background color drawable
           mkdir -p android/app/src/main/res/drawable
-          cat > android/app/src/main/res/drawable/ic_launcher_background.xml << 'XMLEOF'
-            <?xml version="1.0" encoding="utf-8"?>
-            <shape xmlns:android="http://schemas.android.com/apk/res/android">
-                <solid android:color="#E11D48"/>
-            </shape>
-          XMLEOF
+          printf '<?xml version="1.0" encoding="utf-8"?>\n<shape xmlns:android="http://schemas.android.com/apk/res/android">\n    <solid android:color="#E11D48"/>\n</shape>\n' > android/app/src/main/res/drawable/ic_launcher_background.xml
 
           # 5. Adaptive icon XML definition
           mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'XMLEOF'
-            <?xml version="1.0" encoding="utf-8"?>
-            <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-                <background android:drawable="@drawable/ic_launcher_background"/>
-                <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-            </adaptive-icon>
-          XMLEOF
-
-          # 6. Same adaptive icon for round variant
-          cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml \
-             android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          printf '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n    <background android:drawable="@drawable/ic_launcher_background"/>\n    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>\n' > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
       - name: Copy icon to web assets
         run: cp icon.png www/
