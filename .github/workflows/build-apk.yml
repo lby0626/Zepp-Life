@@ -26,6 +26,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare web assets
+        run: |
+          mkdir -p www
+          cp index.html www/
+          cp -r static www/
+          cp -r tutorial www/
+
       - name: Init Capacitor Android
         run: npx cap add android
 
