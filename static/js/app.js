@@ -298,6 +298,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const origText = this.querySelector('.btn-text').textContent;
     this.querySelector('.btn-text').textContent = '执 行 中...';
     const lockedStep = currentStep;
+    const slider = document.getElementById('stepSlider');
+    slider.disabled = true;
 
     const acct = accounts[idx];
     appendLog('info', '⟳ 正在提交刷步请求...');
@@ -323,6 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addHistory(acct.name, currentStep, false);
         restoreSlider(lockedStep);
         this.querySelector('.btn-text').textContent = origText;
+        slider.disabled = false;
         this.disabled = false;
         return;
       }
@@ -350,6 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     restoreSlider(lockedStep);
     this.querySelector('.btn-text').textContent = origText;
+    slider.disabled = false;
     this.disabled = false;
   });
 });
