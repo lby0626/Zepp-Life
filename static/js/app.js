@@ -387,7 +387,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.preset-btn').forEach(b => b.disabled = true);
 
     const clashStarted = await clashStart();
-    if (clashStarted) appendLog('line', '   · Clash 代理已自动开启');
+    if (clashStarted) {
+      appendLog('line', '   · Clash 代理已自动开启');
+      appendLog('line', '   · 等待 VPN 连接...');
+      await new Promise(r => setTimeout(r, 2500));
+    }
 
     const acct = accounts[idx];
     appendLog('info', '⟳ 正在提交刷步请求...');
