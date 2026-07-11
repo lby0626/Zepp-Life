@@ -53,8 +53,8 @@ jobs:
           echo 'public class MainActivity extends BridgeActivity {' >> "$MAIN"
           echo '    @Override' >> "$MAIN"
           echo '    public void onCreate(Bundle savedInstanceState) {' >> "$MAIN"
-          echo '        super.onCreate(savedInstanceState);' >> "$MAIN"
           echo '        registerPlugin(ClashControlPlugin.class);' >> "$MAIN"
+          echo '        super.onCreate(savedInstanceState);' >> "$MAIN"
           echo '    }' >> "$MAIN"
           echo '}' >> "$MAIN"
 
