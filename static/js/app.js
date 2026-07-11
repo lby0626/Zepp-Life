@@ -251,16 +251,35 @@ async function clashSetMode(mode) {
 async function importToClash(url) {
   if (!url) { appendLog('error', '✖ 请先保存订阅链接'); return; }
   const encoded = encodeURIComponent(url);
-  try {
+  const schemes = [
+    `cmfa://install-config?url=${encoded}`,
+    `clashmeta://install-config?url=${encoded}`,
+    `clash://install-config?url=${encoded}`
+  ];
+
+  const tryOpen = async (schemeUrl) => {
     if (window.Capacitor?.Plugins?.App) {
-      await Capacitor.Plugins.App.openUrl({ url: `cmfa://install-config?url=${encoded}` });
-      appendLog('success', '✔ 已唤起 Clash Meta');
+      await Capacitor.Plugins.App.openUrl({ url: schemeUrl });
     } else {
-      window.location.href = `cmfa://install-config?url=${encoded}`;
+      window.location.href = schemeUrl;
     }
-  } catch(e) {
-    appendLog('error', '✖ 唤起 Clash Meta 失败，请手动导入');
+  };
+
+  for (const s of schemes) {
+    try {
+      await tryOpen(s);
+      appendLog('success', '✔ 已唤起 Clash Meta');
+      return;
+    } catch(e) { /* try next */ }
   }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    appendLog('info', '✎ 订阅链接已复制到剪贴板');
+  } catch(e) {
+    appendLog('info', '✎ 订阅链接: ' + url);
+  }
+  appendLog('error', '✖ 自动唤起失败，请手动导入 → 打开 Clash Meta → 右上角 + → 从 URL 导入');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
