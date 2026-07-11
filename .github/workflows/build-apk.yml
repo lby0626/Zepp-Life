@@ -39,6 +39,14 @@ jobs:
       - name: Init Capacitor Android
         run: npx cap add android
 
+      - name: Install Clash control plugin
+        run: |
+          mkdir -p android/app/src/main/java/com/zepplife/steps
+          cp clash-plugin/ClashControlPlugin.java android/app/src/main/java/com/zepplife/steps/
+          # Register plugin in MainActivity
+          sed -i 's/import com.getcapacitor.BridgeActivity;/import com.getcapacitor.BridgeActivity;\nimport android.os.Bundle;/' android/app/src/main/java/com/zepplife/steps/MainActivity.java
+          sed -i 's/public class MainActivity extends BridgeActivity {/public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        registerPlugin(ClashControlPlugin.class);\n    }/' android/app/src/main/java/com/zepplife/steps/MainActivity.java
+
       - name: Generate app icons
         run: |
           # 1. Generate mipmap densities — icon.png fills each size directly

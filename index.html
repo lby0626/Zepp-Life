@@ -133,28 +133,25 @@
     <!-- ===== Tab: 设置 ===== -->
     <div class="tab-panel" id="tab-settings">
       <div class="settings-section">
-        <span class="section-title">Clash 代理设置</span>
+        <span class="section-title">Clash Meta 配置</span>
 
         <div class="settings-card">
           <label class="form-label">订阅链接</label>
           <input type="url" id="clashSubUrl" placeholder="粘贴 Clash Meta 订阅链接" autocomplete="off">
           <div class="settings-row">
-            <button type="button" id="saveSubBtn" class="btn-settings">保存订阅</button>
-            <button type="button" id="importClashBtn" class="btn-settings primary">一键导入 Clash</button>
+            <button type="button" id="saveSubBtn" class="btn-settings">保存</button>
+            <button type="button" id="copySubBtn" class="btn-settings primary">复制链接</button>
           </div>
-        </div>
-
-        <div class="settings-card">
-          <label class="form-label">Clash 状态</label>
-          <div class="clash-status" id="clashStatus">
-            <span class="status-dot offline" id="clashDot"></span>
-            <span id="clashStatusText">未检测</span>
-          </div>
-          <button type="button" id="checkClashBtn" class="btn-settings" style="margin-top:10px;width:100%;">检测连接</button>
         </div>
 
         <div class="settings-card clash-hint">
-          刷步时会自动开启 Clash 代理，完成后自动关闭。
+          <strong>自动 Clash 控制</strong><br>
+          刷步时自动启动 Clash Meta VPN（会弹出系统 VPN 确认，首次允许即可），
+          完成后自动断开连接。<br><br>
+          <strong>首次使用：</strong><br>
+          1. 在 Clash Meta 中点右上角 <strong>+</strong> → URL → 粘贴订阅链接 → 保存<br>
+          2. 点此页面「复制链接」按钮 → 手动打开 CMFA 导入<br>
+          3. 确保已配置好节点后，回到此处点击「开始刷步」
         </div>
       </div>
     </div>

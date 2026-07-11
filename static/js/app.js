@@ -235,54 +235,24 @@ function syncPresets(val) {
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
 }
 
-async function clashSetMode(mode) {
+async function clashStart() {
   try {
-    const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 3000);
-    const resp = await fetch('http://127.0.0.1:9090/configs', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode }),
-      signal: ctrl.signal
-    });
-    return resp.ok;
-  } catch(e) {
-    return false;
-  }
+    if (window.Capacitor?.Plugins?.ClashControl) {
+      await Capacitor.Plugins.ClashControl.startClash();
+      return true;
+    }
+  } catch(e) {}
+  return false;
 }
 
-async function importToClash(url) {
-  if (!url) { appendLog('error', '✖ 请先保存订阅链接'); return; }
-  const encoded = encodeURIComponent(url);
-  const schemes = [
-    `cmfa://install-config?url=${encoded}`,
-    `clashmeta://install-config?url=${encoded}`,
-    `clash://install-config?url=${encoded}`
-  ];
-
-  const tryOpen = async (schemeUrl) => {
-    if (window.Capacitor?.Plugins?.App) {
-      await Capacitor.Plugins.App.openUrl({ url: schemeUrl });
-    } else {
-      window.location.href = schemeUrl;
-    }
-  };
-
-  for (const s of schemes) {
-    try {
-      await tryOpen(s);
-      appendLog('success', '✔ 已唤起 Clash Meta');
-      return;
-    } catch(e) { /* try next */ }
-  }
-
+async function clashStop() {
   try {
-    await navigator.clipboard.writeText(url);
-    appendLog('info', '✎ 订阅链接已复制到剪贴板');
-  } catch(e) {
-    appendLog('info', '✎ 订阅链接: ' + url);
-  }
-  appendLog('error', '✖ 自动唤起失败，请手动导入 → 打开 Clash Meta → 右上角 + → 从 URL 导入');
+    if (window.Capacitor?.Plugins?.ClashControl) {
+      await Capacitor.Plugins.ClashControl.stopClash();
+      return true;
+    }
+  } catch(e) {}
+  return false;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -414,11 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
     slider.disabled = true;
     document.querySelectorAll('.preset-btn').forEach(b => b.disabled = true);
 
-    let clashEnabled = false;
-    try {
-      clashEnabled = await clashSetMode('rule');
-      if (clashEnabled) appendLog('line', '   · Clash 代理已开启');
-    } catch(e) {}
+    const clashStarted = await clashStart();
+    if (clashStarted) appendLog('line', '   · Clash 代理已自动开启');
 
     const acct = accounts[idx];
     appendLog('info', '⟳ 正在提交刷步请求...');
@@ -442,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showResult(false, '服务器返回了非JSON数据 (状态:' + resp.status + ')');
         appendLog('error', '✖ 服务器返回非JSON: ' + text.slice(0, 100));
         addHistory(acct.name, currentStep, false);
-        if (clashEnabled) { await clashSetMode('direct'); appendLog('line', '   · Clash 代理已关闭'); }
+        if (clashStarted) { await clashStop(); appendLog('line', '   · Clash 代理已自动关闭'); }
         restoreSlider(lockedStep);
         this.querySelector('.btn-text').textContent = origText;
         slider.disabled = false;
@@ -472,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
       addHistory(acct.name, currentStep, false);
     }
 
-    if (clashEnabled) { await clashSetMode('direct'); appendLog('line', '   · Clash 代理已关闭'); }
+    if (clashStarted) { await clashStop(); appendLog('line', '   · Clash 代理已自动关闭'); }
     restoreSlider(lockedStep);
     this.querySelector('.btn-text').textContent = origText;
     slider.disabled = false;
@@ -682,8 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   const subInput = document.getElementById('clashSubUrl');
   const saveBtn = document.getElementById('saveSubBtn');
-  const importBtn = document.getElementById('importClashBtn');
-  const checkBtn = document.getElementById('checkClashBtn');
+  const copyBtn = document.getElementById('copySubBtn');
 
   if (subInput) {
     subInput.value = localStorage.getItem(CLASH_SUB_KEY) || '';
@@ -698,34 +664,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  if (importBtn) {
-    importBtn.addEventListener('click', function() {
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async function() {
       const url = localStorage.getItem(CLASH_SUB_KEY) || '';
-      importToClash(url);
-    });
-  }
-
-  if (checkBtn) {
-    checkBtn.addEventListener('click', async function() {
-      const dot = document.getElementById('clashDot');
-      const text = document.getElementById('clashStatusText');
-      if (!dot || !text) return;
-      dot.className = 'status-dot';
-      text.textContent = '检测中...';
+      if (!url) { appendLog('error', '✖ 请先保存订阅链接'); return; }
       try {
-        const ctrl = new AbortController();
-        setTimeout(() => ctrl.abort(), 3000);
-        const resp = await fetch('http://127.0.0.1:9090/version', { signal: ctrl.signal });
-        if (resp.ok) {
-          dot.className = 'status-dot online';
-          text.textContent = '已连接 (v' + (await resp.text()).slice(0, 10) + ')';
-        } else {
-          dot.className = 'status-dot offline';
-          text.textContent = '未连接 (HTTP ' + resp.status + ')';
-        }
+        await navigator.clipboard.writeText(url);
+        appendLog('success', '✔ 订阅链接已复制，请打开 Clash Meta 手动导入');
       } catch(e) {
-        dot.className = 'status-dot offline';
-        text.textContent = '未连接';
+        appendLog('error', '✖ 复制失败');
       }
     });
   }
