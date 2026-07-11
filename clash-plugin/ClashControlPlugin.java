@@ -41,19 +41,8 @@ public class ClashControlPlugin extends Plugin {
     public void stopClash(PluginCall call) {
         JSObject log = new JSObject();
         try {
-            log.put("step1", "检查 CMFA 是否安装...");
+            log.put("step1", "正在启动 CMFA MainActivity 用于注册广播...");
             PackageManager pm = getContext().getPackageManager();
-            try {
-                pm.getPackageInfo("com.github.metacubex.clash.meta", 0);
-                log.put("step1b", "CMFA 已安装");
-            } catch (PackageManager.NameNotFoundException e) {
-                log.put("success", false);
-                log.put("error", "CMFA 未安装");
-                call.resolve(log);
-                return;
-            }
-
-            log.put("step2", "正在启动 CMFA MainActivity 用于注册广播...");
             Intent warmup = pm.getLaunchIntentForPackage("com.github.metacubex.clash.meta");
             if (warmup != null) {
                 warmup.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
