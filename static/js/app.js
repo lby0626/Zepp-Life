@@ -4,6 +4,10 @@ const HISTORY_KEY = 'stepwong_history';
 const THEME_KEY = 'stepwong_theme';
 const CLASH_SUB_KEY = 'stepwong_clash_sub';
 
+if (window.Capacitor?.registerPlugin) {
+  Capacitor.registerPlugin('ClashControl');
+}
+
 let accounts = [];
 let stepHistory = [];
 let currentStep = 1;
