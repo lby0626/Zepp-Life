@@ -228,6 +228,14 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+function restoreSlider(val) {
+  const slider = document.getElementById('stepSlider');
+  const display = document.getElementById('stepNumber');
+  slider.value = val;
+  display.textContent = Number(val).toLocaleString();
+  currentStep = val;
+}
+
 function appendLog(type, text) {
   const log = document.getElementById('logContent');
   log.innerHTML += '<span class="log-prompt">></span> <span class="log-line ' + type + '">' + text + '</span><br>';
@@ -289,6 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
     this.disabled = true;
     const origText = this.querySelector('.btn-text').textContent;
     this.querySelector('.btn-text').textContent = '执 行 中...';
+    const lockedStep = currentStep;
 
     const acct = accounts[idx];
     appendLog('info', '⟳ 正在提交刷步请求...');
@@ -312,6 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showResult(false, '服务器返回了非JSON数据 (状态:' + resp.status + ')');
         appendLog('error', '✖ 服务器返回非JSON: ' + text.slice(0, 100));
         addHistory(acct.name, currentStep, false);
+        restoreSlider(lockedStep);
         this.querySelector('.btn-text').textContent = origText;
         this.disabled = false;
         return;
@@ -338,6 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
       addHistory(acct.name, currentStep, false);
     }
 
+    restoreSlider(lockedStep);
     this.querySelector('.btn-text').textContent = origText;
     this.disabled = false;
   });
