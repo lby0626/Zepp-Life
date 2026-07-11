@@ -26,6 +26,7 @@
           <a href="https://github.com/lby0626" target="_blank" rel="noopener" aria-label="GitHub" style="display:inline-block;opacity:0.35;transition:opacity 0.15s;margin-left:4px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.35'" onfocus="this.style.opacity='1'" onblur="this.style.opacity='0.35'">
             <img src="static/images/github-fill.png" alt="GitHub" width="18" height="18" style="display:block;">
           </a>
+          <a href="https://wwbbt.lanzout.com/i6dYG3vszvcb" target="_blank" rel="noopener" aria-label="下载APK" style="display:inline-block;opacity:0.4;transition:opacity 0.15s;margin-left:2px;text-decoration:none;color:var(--text-secondary);font-size:13px;font-weight:500;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.4'" onfocus="this.style.opacity='1'" onblur="this.style.opacity='0.4'">下载</a>
           <button type="button" id="tutorialBtn" class="tutorial-btn" title="微信步数绑定教学">📖</button>
         </div>
       </div>
@@ -130,44 +131,7 @@
       </div>
     </div>
 
-    <!-- ===== Tab: 设置 ===== -->
-    <div class="tab-panel" id="tab-settings">
-      <div class="settings-section">
-        <span class="section-title">Clash Meta 配置</span>
 
-        <div class="settings-card">
-          <label class="form-label">订阅链接</label>
-          <input type="url" id="clashSubUrl" placeholder="粘贴 Clash Meta 订阅链接" autocomplete="off">
-          <div class="settings-row">
-            <button type="button" id="saveSubBtn" class="btn-settings">保存</button>
-            <button type="button" id="copySubBtn" class="btn-settings primary">复制链接</button>
-          </div>
-        </div>
-
-        <div class="settings-card clash-hint">
-          <strong>自动 Clash 控制</strong><br>
-          刷步时自动启动 Clash Meta VPN（会弹出系统 VPN 确认，首次允许即可），
-          完成后自动断开连接。<br><br>
-          <strong>首次使用：</strong><br>
-          1. 在 Clash Meta 中点右上角 <strong>+</strong> → URL → 粘贴订阅链接 → 保存<br>
-          2. 点此页面「复制链接」按钮 → 手动打开 CMFA 导入<br>
-          3. 确保已配置好节点后，回到此处点击「开始刷步」
-        </div>
-
-        <button type="button" id="testClashBtn" class="btn-settings" style="width:100%;margin-top:8px;">
-          诊断 Clash 插件
-        </button>
-
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button type="button" id="testStartBtn" class="btn-settings primary" style="flex:1;">
-            ▶ 测试启动
-          </button>
-          <button type="button" id="testStopBtn" class="btn-settings danger" style="flex:1;">
-            ■ 测试停止
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- ===== 底部导航 ===== -->
     <nav class="bottom-nav">
@@ -182,10 +146,6 @@
       <button type="button" class="nav-item" data-tab="logs">
         <span class="nav-icon">📋</span>
         <span class="nav-label">日志</span>
-      </button>
-      <button type="button" class="nav-item" data-tab="settings">
-        <span class="nav-icon">⚙️</span>
-        <span class="nav-label">设置</span>
       </button>
     </nav>
 

@@ -2,7 +2,6 @@ const WORKER_URL = 'https://stepwong-api.3255962845.workers.dev';
 const STORAGE_KEY = 'stepwong_accounts';
 const HISTORY_KEY = 'stepwong_history';
 const THEME_KEY = 'stepwong_theme';
-const CLASH_SUB_KEY = 'stepwong_clash_sub';
 
 let accounts = [];
 let stepHistory = [];
@@ -247,52 +246,6 @@ async function clashStart() {
   return null;
 }
 
-async function clashStop() {
-  try {
-    if (window.Capacitor?.Plugins?.ClashControl) {
-      const result = await Capacitor.Plugins.ClashControl.stopClash();
-      return result;
-    }
-  } catch(e) {
-    appendLog('error', '✖ Clash 停止异常: ' + (e.message || e));
-  }
-  return null;
-}
-
-async function handleClashStart() {
-  appendLog('info', '--- Clash 启动测试 ---');
-  const r = await clashStart();
-  if (r) {
-    if (r.success) {
-      appendLog('success', '✔ ' + r.step3);
-    } else {
-      appendLog('error', '✖ ' + (r.error || '无返回'));
-    }
-    for (let k of Object.keys(r)) {
-      if (k !== 'success' && k !== 'error') appendLog('line', '   · ' + k + ': ' + r[k]);
-    }
-  } else {
-    appendLog('error', '✖ ClashControl 插件不可用');
-  }
-}
-
-async function handleClashStop() {
-  appendLog('info', '--- Clash 停止测试 ---');
-  const r = await clashStop();
-  if (r) {
-    if (r.success) {
-      appendLog('success', '✔ ' + (r.step5 || r.step4 || 'OK'));
-    } else {
-      appendLog('error', '✖ ' + (r.error || '停止失败'));
-    }
-    for (let k of Object.keys(r)) {
-      if (k !== 'success' && k !== 'error') appendLog('line', '   · ' + k + ': ' + r[k]);
-    }
-  } else {
-    appendLog('error', '✖ ClashControl 插件不可用');
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   const slider = document.getElementById('stepSlider');
   if (slider) {
@@ -452,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showResult(false, '服务器返回了非JSON数据 (状态:' + resp.status + ')');
         appendLog('error', '✖ 服务器返回非JSON: ' + text.slice(0, 100));
         addHistory(acct.name, currentStep, false);
-        if (clashStarted) { const sr = await clashStop(); appendLog('line', '   · Clash 代理已自动关闭' + (sr?.success ? '' : ' (可能未完全停止)')); }
+        if (clashStarted) { appendLog('line', '   · Clash 代理已自动启动（请手动在 CMFA 关闭）'); }
         restoreSlider(lockedStep);
         this.querySelector('.btn-text').textContent = origText;
         slider.disabled = false;
@@ -482,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
       addHistory(acct.name, currentStep, false);
     }
 
-    if (clashStarted) { const sr = await clashStop(); appendLog('line', '   · Clash 代理已自动关闭' + (sr?.success ? '' : ' (可能未完全停止)')); }
+    if (clashStarted) { appendLog('line', '   · Clash 代理已自动启动（请手动在 CMFA 关闭）'); }
     restoreSlider(lockedStep);
     this.querySelector('.btn-text').textContent = origText;
     slider.disabled = false;
@@ -689,63 +642,4 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-  const subInput = document.getElementById('clashSubUrl');
-  const saveBtn = document.getElementById('saveSubBtn');
-  const copyBtn = document.getElementById('copySubBtn');
-  const testBtn = document.getElementById('testClashBtn');
-
-  if (subInput) {
-    subInput.value = localStorage.getItem(CLASH_SUB_KEY) || '';
-  }
-
-  if (saveBtn) {
-    saveBtn.addEventListener('click', function() {
-      const val = subInput.value.trim();
-      if (!val) { appendLog('error', '✖ 请输入订阅链接'); return; }
-      localStorage.setItem(CLASH_SUB_KEY, val);
-      appendLog('success', '✔ 订阅链接已保存');
-    });
-  }
-
-  if (copyBtn) {
-    copyBtn.addEventListener('click', async function() {
-      const url = localStorage.getItem(CLASH_SUB_KEY) || '';
-      if (!url) { appendLog('error', '✖ 请先保存订阅链接'); return; }
-      try {
-        await navigator.clipboard.writeText(url);
-        appendLog('success', '✔ 订阅链接已复制，请打开 Clash Meta 手动导入');
-      } catch(e) {
-        appendLog('error', '✖ 复制失败');
-      }
-    });
-  }
-
-  if (testBtn) {
-    testBtn.addEventListener('click', async function() {
-      appendLog('info', '--- Clash 诊断开始 ---');
-      appendLog('line', '   · window.Capacitor: ' + (typeof window.Capacitor !== 'undefined' ? '存在' : '未定义'));
-      if (window.Capacitor) {
-        appendLog('line', '   · Capacitor.Plugins: ' + (window.Capacitor.Plugins ? '存在' : '未定义'));
-        appendLog('line', '   · 已注册插件: ' + (window.Capacitor.Plugins ? Object.keys(window.Capacitor.Plugins).join(', ') : '无'));
-        if (window.Capacitor.Plugins?.ClashControl) {
-          appendLog('line', '   · ClashControl 插件: 存在');
-        } else {
-          appendLog('error', '✖ ClashControl 插件未注册！检查 APK 是否包含插件');
-          appendLog('line', '   · 若 APK 未更新，请重新构建');
-        }
-      }
-      appendLog('info', '--- 诊断结束 ---');
-    });
-  }
-
-  const testStartBtn = document.getElementById('testStartBtn');
-  if (testStartBtn) {
-    testStartBtn.addEventListener('click', handleClashStart);
-  }
-
-  const testStopBtn = document.getElementById('testStopBtn');
-  if (testStopBtn) {
-    testStopBtn.addEventListener('click', handleClashStop);
-  }
-});
+document.addEventListener('DOMContentLoaded', init);

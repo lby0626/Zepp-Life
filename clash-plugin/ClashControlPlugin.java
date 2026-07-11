@@ -1,10 +1,6 @@
 package com.zepplife.steps;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.net.VpnService;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
