@@ -2,6 +2,7 @@ const WORKER_URL = 'https://stepwong-api.3255962845.workers.dev';
 const STORAGE_KEY = 'stepwong_accounts';
 const HISTORY_KEY = 'stepwong_history';
 const THEME_KEY = 'stepwong_theme';
+const CLASH_SUB_KEY = 'stepwong_clash_sub';
 
 let accounts = [];
 let stepHistory = [];
@@ -234,6 +235,34 @@ function syncPresets(val) {
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
 }
 
+async function clashSetMode(mode) {
+  try {
+    const resp = await fetch('http://127.0.0.1:9090/configs', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode })
+    });
+    return resp.ok;
+  } catch(e) {
+    return false;
+  }
+}
+
+async function importToClash(url) {
+  if (!url) { appendLog('error', '✖ 请先保存订阅链接'); return; }
+  const encoded = encodeURIComponent(url);
+  try {
+    if (window.Capacitor?.Plugins?.App) {
+      await Capacitor.Plugins.App.openUrl({ url: `cmfa://install-config?url=${encoded}` });
+      appendLog('success', '✔ 已唤起 Clash Meta');
+    } else {
+      window.location.href = `cmfa://install-config?url=${encoded}`;
+    }
+  } catch(e) {
+    appendLog('error', '✖ 唤起 Clash Meta 失败，请手动导入');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const slider = document.getElementById('stepSlider');
   if (slider) {
@@ -363,6 +392,12 @@ document.addEventListener('DOMContentLoaded', function() {
     slider.disabled = true;
     document.querySelectorAll('.preset-btn').forEach(b => b.disabled = true);
 
+    let clashEnabled = false;
+    try {
+      clashEnabled = await clashSetMode('rule');
+      if (clashEnabled) appendLog('line', '   · Clash 代理已开启');
+    } catch(e) {}
+
     const acct = accounts[idx];
     appendLog('info', '⟳ 正在提交刷步请求...');
     appendLog('line', '   · 账号: ' + acct.name);
@@ -385,6 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showResult(false, '服务器返回了非JSON数据 (状态:' + resp.status + ')');
         appendLog('error', '✖ 服务器返回非JSON: ' + text.slice(0, 100));
         addHistory(acct.name, currentStep, false);
+        if (clashEnabled) { await clashSetMode('direct'); appendLog('line', '   · Clash 代理已关闭'); }
         restoreSlider(lockedStep);
         this.querySelector('.btn-text').textContent = origText;
         slider.disabled = false;
@@ -414,6 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
       addHistory(acct.name, currentStep, false);
     }
 
+    if (clashEnabled) { await clashSetMode('direct'); appendLog('line', '   · Clash 代理已关闭'); }
     restoreSlider(lockedStep);
     this.querySelector('.btn-text').textContent = origText;
     slider.disabled = false;
@@ -618,4 +655,54 @@ document.addEventListener('DOMContentLoaded', function() {
   if (overlay) overlay.addEventListener('click', function(e) {
     if (e.target === overlay) closeTutorial();
   });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const subInput = document.getElementById('clashSubUrl');
+  const saveBtn = document.getElementById('saveSubBtn');
+  const importBtn = document.getElementById('importClashBtn');
+  const checkBtn = document.getElementById('checkClashBtn');
+
+  if (subInput) {
+    subInput.value = localStorage.getItem(CLASH_SUB_KEY) || '';
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', function() {
+      const val = subInput.value.trim();
+      if (!val) { appendLog('error', '✖ 请输入订阅链接'); return; }
+      localStorage.setItem(CLASH_SUB_KEY, val);
+      appendLog('success', '✔ 订阅链接已保存');
+    });
+  }
+
+  if (importBtn) {
+    importBtn.addEventListener('click', function() {
+      const url = localStorage.getItem(CLASH_SUB_KEY) || '';
+      importToClash(url);
+    });
+  }
+
+  if (checkBtn) {
+    checkBtn.addEventListener('click', async function() {
+      const dot = document.getElementById('clashDot');
+      const text = document.getElementById('clashStatusText');
+      if (!dot || !text) return;
+      dot.className = 'status-dot';
+      text.textContent = '检测中...';
+      try {
+        const resp = await fetch('http://127.0.0.1:9090/version');
+        if (resp.ok) {
+          dot.className = 'status-dot online';
+          text.textContent = '已连接 (v' + (await resp.text()).slice(0, 10) + ')';
+        } else {
+          dot.className = 'status-dot offline';
+          text.textContent = '未连接 (HTTP ' + resp.status + ')';
+        }
+      } catch(e) {
+        dot.className = 'status-dot offline';
+        text.textContent = '未连接';
+      }
+    });
+  }
 });

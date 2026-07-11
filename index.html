@@ -130,6 +130,34 @@
       </div>
     </div>
 
+    <!-- ===== Tab: 设置 ===== -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="settings-section">
+        <span class="section-title">Clash 代理设置</span>
+
+        <div class="settings-card">
+          <label class="form-label">订阅链接</label>
+          <input type="url" id="clashSubUrl" placeholder="粘贴 Clash Meta 订阅链接" autocomplete="off">
+          <div class="settings-row">
+            <button type="button" id="saveSubBtn" class="btn-settings">保存订阅</button>
+            <button type="button" id="importClashBtn" class="btn-settings primary">一键导入 Clash</button>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <label class="form-label">Clash 状态</label>
+          <div class="clash-status" id="clashStatus">
+            <span class="status-dot offline" id="clashDot"></span>
+            <span id="clashStatusText">未检测</span>
+          </div>
+          <button type="button" id="checkClashBtn" class="btn-settings" style="margin-top:10px;width:100%;">检测连接</button>
+        </div>
+
+        <div class="settings-card clash-hint">
+          刷步时会自动开启 Clash 代理，完成后自动关闭。
+        </div>
+      </div>
+    </div>
 
     <!-- ===== 底部导航 ===== -->
     <nav class="bottom-nav">
@@ -144,6 +172,10 @@
       <button type="button" class="nav-item" data-tab="logs">
         <span class="nav-icon">📋</span>
         <span class="nav-label">日志</span>
+      </button>
+      <button type="button" class="nav-item" data-tab="settings">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">设置</span>
       </button>
     </nav>
 
