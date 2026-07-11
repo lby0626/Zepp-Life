@@ -238,20 +238,29 @@ function syncPresets(val) {
 async function clashStart() {
   try {
     if (window.Capacitor?.Plugins?.ClashControl) {
+      appendLog('line', '   · 调用 ClashControl.startClash()...');
       await Capacitor.Plugins.ClashControl.startClash();
+      appendLog('line', '   · Intent 已发送');
       return true;
     }
-  } catch(e) {}
+    appendLog('line', '   · ClashControl 插件不可用');
+  } catch(e) {
+    appendLog('error', '✖ clashStart 异常: ' + (e.message || e));
+  }
   return false;
 }
 
 async function clashStop() {
   try {
     if (window.Capacitor?.Plugins?.ClashControl) {
+      appendLog('line', '   · 调用 ClashControl.stopClash()...');
       await Capacitor.Plugins.ClashControl.stopClash();
+      appendLog('line', '   · Intent 已发送');
       return true;
     }
-  } catch(e) {}
+  } catch(e) {
+    appendLog('error', '✖ clashStop 异常: ' + (e.message || e));
+  }
   return false;
 }
 
@@ -650,6 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const subInput = document.getElementById('clashSubUrl');
   const saveBtn = document.getElementById('saveSubBtn');
   const copyBtn = document.getElementById('copySubBtn');
+  const testBtn = document.getElementById('testClashBtn');
 
   if (subInput) {
     subInput.value = localStorage.getItem(CLASH_SUB_KEY) || '';
@@ -674,6 +684,30 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch(e) {
         appendLog('error', '✖ 复制失败');
       }
+    });
+  }
+
+  if (testBtn) {
+    testBtn.addEventListener('click', async function() {
+      appendLog('info', '--- Clash 诊断开始 ---');
+      appendLog('line', '   · window.Capacitor: ' + (typeof window.Capacitor !== 'undefined' ? '存在' : '未定义'));
+      if (window.Capacitor) {
+        appendLog('line', '   · Capacitor.Plugins: ' + (window.Capacitor.Plugins ? '存在' : '未定义'));
+        appendLog('line', '   · 已注册插件: ' + (window.Capacitor.Plugins ? Object.keys(window.Capacitor.Plugins).join(', ') : '无'));
+        if (window.Capacitor.Plugins?.ClashControl) {
+          appendLog('line', '   · ClashControl 插件: 存在');
+          try {
+            await Capacitor.Plugins.ClashControl.startClash();
+            appendLog('success', '✔ START_CLASH Intent 已发送 (如 VPN 未启动请检查 CMFA)');
+          } catch(e) {
+            appendLog('error', '✖ 调用 startClash 失败: ' + e.message);
+          }
+        } else {
+          appendLog('error', '✖ ClashControl 插件未注册！检查 APK 是否包含插件');
+          appendLog('line', '   · 若 APK 未更新，请重新构建');
+        }
+      }
+      appendLog('info', '--- 诊断结束 ---');
     });
   }
 });
